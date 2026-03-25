@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { useState, useCallback, useRef } from "react";
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from "framer-motion";
 import { Job, UserProfile, Application } from "../data/types";
 import { X, Heart, Briefcase, MapPin, Clock, Flame } from "lucide-react";
 import CVTailoringModal from "./CVTailoringModal";
@@ -15,44 +15,73 @@ interface SwipeFeedProps {
   onOpenDashboard: () => void;
 }
 
-const SWIPE_THRESHOLD = 100;
+const SWIPE_THRESHOLD = 80;
+const FLY_OUT_DISTANCE = 600;
 
 const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, onOpenDashboard }: SwipeFeedProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCVModal, setShowCVModal] = useState(false);
   const [showMatch, setShowMatch] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [direction, setDirection] = useState<"left" | "right" | null>(null);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-15, 15]);
+  const rotate = useTransform(x, [-200, 200], [-18, 18]);
   const applyOpacity = useTransform(x, [0, SWIPE_THRESHOLD], [0, 1]);
   const passOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0]);
 
+  // Green/red edge glows
+  const rightGlow = useTransform(x, [0, 150], ["rgba(34,197,94,0)", "rgba(34,197,94,0.3)"]);
+  const leftGlow = useTransform(x, [-150, 0], ["rgba(239,68,68,0.3)", "rgba(239,68,68,0)"]);
+
   const currentJob = jobs[currentIndex];
   const capReached = swipesLeft <= 0;
+  const noMoreJobs = currentIndex >= jobs.length;
+
+  const flyCardOut = useCallback((dir: "left" | "right", onComplete: () => void) => {
+    setIsAnimatingOut(true);
+    const targetX = dir === "right" ? FLY_OUT_DISTANCE : -FLY_OUT_DISTANCE;
+    animate(x, targetX, {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+      velocity: dir === "right" ? 800 : -800,
+      onComplete: () => {
+        x.set(0);
+        setIsAnimatingOut(false);
+        onComplete();
+      },
+    });
+  }, [x]);
+
+  const advanceCard = useCallback(() => {
+    setCurrentIndex(i => i + 1);
+  }, []);
 
   const handleSwipeRight = useCallback(() => {
-    if (capReached || !currentJob) return;
+    if (capReached || !currentJob || isAnimatingOut) return;
     setSelectedJob(currentJob);
     setShowCVModal(true);
-  }, [capReached, currentJob]);
+  }, [capReached, currentJob, isAnimatingOut]);
 
   const handleSwipeLeft = useCallback(() => {
-    if (!currentJob) return;
-    setDirection("left");
+    if (!currentJob || isAnimatingOut) return;
     onPass(currentJob);
-    setTimeout(() => {
-      setCurrentIndex(i => i + 1);
-      setDirection(null);
-    }, 300);
-  }, [currentJob, onPass]);
+    flyCardOut("left", advanceCard);
+  }, [currentJob, onPass, flyCardOut, advanceCard, isAnimatingOut]);
 
   const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
-    if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 500) {
+    if (isAnimatingOut) return;
+    const swipeRight = info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 400;
+    const swipeLeft = info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -400;
+
+    if (swipeRight) {
       handleSwipeRight();
-    } else if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -500) {
+    } else if (swipeLeft) {
       handleSwipeLeft();
+    } else {
+      // Snap back
+      animate(x, 0, { type: "spring", stiffness: 500, damping: 30 });
     }
   };
 
@@ -62,26 +91,18 @@ const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, o
     onApply(selectedJob);
     // 30% chance of match for demo
     if (Math.random() < 0.3) {
-      setTimeout(() => setShowMatch(true), 500);
+      flyCardOut("right", () => {
+        advanceCard();
+        setTimeout(() => setShowMatch(true), 300);
+      });
     } else {
-      setDirection("right");
-      setTimeout(() => {
-        setCurrentIndex(i => i + 1);
-        setDirection(null);
-      }, 300);
+      flyCardOut("right", advanceCard);
     }
   };
 
   const handleMatchDismiss = () => {
     setShowMatch(false);
-    setDirection("right");
-    setTimeout(() => {
-      setCurrentIndex(i => i + 1);
-      setDirection(null);
-    }, 200);
   };
-
-  const noMoreJobs = currentIndex >= jobs.length;
 
   return (
     <div className="relative z-10 flex flex-col min-h-screen max-w-lg mx-auto">
@@ -125,92 +146,119 @@ const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, o
           </motion.div>
         ) : (
           <div className="relative w-full" style={{ height: 480 }}>
-            {/* Background cards */}
-            {jobs.slice(currentIndex + 1, currentIndex + 3).reverse().map((job, i) => (
-              <div
-                key={job.id}
-                className="absolute inset-0 glass"
-                style={{
-                  transform: `scale(${0.95 - i * 0.03}) translateY(${(2 - i) * 12}px)`,
-                  opacity: 0.6 - i * 0.2,
-                  zIndex: i,
-                }}
-              />
-            ))}
+            {/* Background cards (peek behind) */}
+            {jobs.slice(currentIndex + 1, currentIndex + 3).reverse().map((job, i) => {
+              const stackIndex = 1 - i; // 0 = furthest, 1 = closest
+              return (
+                <motion.div
+                  key={job.id}
+                  className="absolute inset-0 glass pointer-events-none"
+                  initial={false}
+                  animate={{
+                    scale: 0.92 + stackIndex * 0.04,
+                    y: (2 - stackIndex) * 14,
+                    opacity: 0.4 + stackIndex * 0.2,
+                  }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  style={{ zIndex: stackIndex }}
+                />
+              );
+            })}
 
             {/* Active card */}
-            <AnimatePresence>
-              {currentJob && !direction && (
+            {currentJob && (
+              <motion.div
+                key={currentJob.id}
+                className="absolute inset-0 glass p-6 cursor-grab active:cursor-grabbing select-none overflow-hidden touch-none"
+                style={{
+                  x,
+                  rotate,
+                  zIndex: 10,
+                  boxShadow: useTransform(
+                    x,
+                    [-150, 0, 150],
+                    [
+                      "0 8px 32px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.1)",
+                      "0 8px 32px rgba(14,86,250,0.15)",
+                      "0 8px 32px rgba(34,197,94,0.25), 0 0 60px rgba(34,197,94,0.1)",
+                    ]
+                  ),
+                }}
+                drag={isAnimatingOut ? false : "x"}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.9}
+                onDragEnd={handleDragEnd}
+                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              >
+                {/* APPLY stamp */}
                 <motion.div
-                  key={currentJob.id}
-                  className="absolute inset-0 glass p-6 cursor-grab active:cursor-grabbing select-none overflow-hidden"
-                  style={{ x, rotate, zIndex: 10 }}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.8}
-                  onDragEnd={handleDragEnd}
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ 
-                    x: direction === "right" ? 300 : -300,
-                    opacity: 0,
-                    transition: { duration: 0.3 }
+                  className="absolute top-8 right-6 z-20 border-[3px] rounded-lg px-4 py-1.5 rotate-12"
+                  style={{
+                    opacity: applyOpacity,
+                    borderColor: "rgb(34, 197, 94)",
                   }}
                 >
-                  {/* APPLY / PASS stamps */}
-                  <motion.div className="absolute top-6 right-6 z-20 border-4 border-green-500 rounded-lg px-3 py-1 rotate-12" style={{ opacity: applyOpacity }}>
-                    <span className="text-green-500 font-display font-bold text-xl">APPLY</span>
-                  </motion.div>
-                  <motion.div className="absolute top-6 left-6 z-20 border-4 border-red-500 rounded-lg px-3 py-1 -rotate-12" style={{ opacity: passOpacity }}>
-                    <span className="text-red-500 font-display font-bold text-xl">PASS</span>
-                  </motion.div>
-
-                  {/* Card content */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{currentJob.logo}</span>
-                      <div>
-                        <p className="text-sm text-muted-foreground font-body">{currentJob.company}</p>
-                        <h3 className="text-lg font-display font-bold leading-tight">{currentJob.title}</h3>
-                      </div>
-                    </div>
-                    <div className="px-3 py-1.5 rounded-full bg-accent/20 border border-accent/40 glow-accent">
-                      <span className="text-sm font-display font-bold text-accent">{currentJob.matchScore}%</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {[
-                      { icon: Briefcase, text: currentJob.type },
-                      { icon: MapPin, text: currentJob.location },
-                      { icon: Clock, text: currentJob.duration },
-                    ].map(({ icon: Icon, text }) => (
-                      <span key={text} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                        <Icon className="w-3 h-3" /> {text}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="mb-4">
-                    <p className="text-xs text-accent uppercase tracking-wider font-semibold mb-2">Why You Match</p>
-                    <ul className="space-y-2">
-                      {currentJob.whyMatch.map((reason, i) => (
-                        <li key={i} className="text-sm text-muted-foreground flex gap-2">
-                          <span className="text-accent mt-0.5">✦</span>
-                          {reason}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="absolute bottom-0 left-0 right-0 px-6 py-4 rounded-b-[20px]" style={{ background: "linear-gradient(to top, rgba(1,0,31,0.8), transparent)" }}>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30">
-                      <span className="text-xs text-warning font-medium">⚠ {currentJob.hardRequirement}</span>
-                    </div>
-                  </div>
+                  <span className="font-display font-bold text-2xl" style={{ color: "rgb(34, 197, 94)" }}>APPLY</span>
                 </motion.div>
-              )}
-            </AnimatePresence>
+
+                {/* PASS stamp */}
+                <motion.div
+                  className="absolute top-8 left-6 z-20 border-[3px] rounded-lg px-4 py-1.5 -rotate-12"
+                  style={{
+                    opacity: passOpacity,
+                    borderColor: "rgb(239, 68, 68)",
+                  }}
+                >
+                  <span className="font-display font-bold text-2xl" style={{ color: "rgb(239, 68, 68)" }}>PASS</span>
+                </motion.div>
+
+                {/* Card content */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{currentJob.logo}</span>
+                    <div>
+                      <p className="text-sm text-muted-foreground font-body">{currentJob.company}</p>
+                      <h3 className="text-lg font-display font-bold leading-tight">{currentJob.title}</h3>
+                    </div>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-full bg-accent/20 border border-accent/40 glow-accent">
+                    <span className="text-sm font-display font-bold text-accent">{currentJob.matchScore}%</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {[
+                    { icon: Briefcase, text: currentJob.type },
+                    { icon: MapPin, text: currentJob.location },
+                    { icon: Clock, text: currentJob.duration },
+                  ].map(({ icon: Icon, text }) => (
+                    <span key={text} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                      <Icon className="w-3 h-3" /> {text}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs text-accent uppercase tracking-wider font-semibold mb-2">Why You Match</p>
+                  <ul className="space-y-2">
+                    {currentJob.whyMatch.map((reason, i) => (
+                      <li key={i} className="text-sm text-muted-foreground flex gap-2">
+                        <span className="text-accent mt-0.5">✦</span>
+                        {reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 px-6 py-4 rounded-b-[20px]" style={{ background: "linear-gradient(to top, rgba(1,0,31,0.8), transparent)" }}>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30">
+                    <span className="text-xs text-warning font-medium">⚠ {currentJob.hardRequirement}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
         )}
       </div>
@@ -218,40 +266,48 @@ const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, o
       {/* Action buttons */}
       {!capReached && !noMoreJobs && (
         <div className="flex justify-center gap-8 pb-8">
-          <button
+          <motion.button
             onClick={handleSwipeLeft}
-            className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center transition-all hover:scale-110 hover:border-red-500/50 active:scale-90"
+            className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center transition-colors hover:border-destructive/50"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
           >
-            <X className="w-7 h-7 text-red-400" />
-          </button>
-          <button
+            <X className="w-7 h-7 text-destructive" />
+          </motion.button>
+          <motion.button
             onClick={handleSwipeRight}
-            className="w-16 h-16 rounded-full bg-primary border border-primary flex items-center justify-center glow-primary transition-all hover:scale-110 active:scale-90"
+            className="w-16 h-16 rounded-full bg-primary border border-primary flex items-center justify-center glow-primary"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
           >
             <Heart className="w-7 h-7 text-primary-foreground" />
-          </button>
+          </motion.button>
         </div>
       )}
 
       {/* CV Modal */}
-      {showCVModal && selectedJob && (
-        <CVTailoringModal
-          job={selectedJob}
-          profile={profile}
-          onSend={handleSendApplication}
-          onClose={() => setShowCVModal(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showCVModal && selectedJob && (
+          <CVTailoringModal
+            job={selectedJob}
+            profile={profile}
+            onSend={handleSendApplication}
+            onClose={() => setShowCVModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Match Screen */}
-      {showMatch && selectedJob && (
-        <MatchScreen
-          job={selectedJob}
-          profile={profile}
-          onMessage={handleMatchDismiss}
-          onKeepSwiping={handleMatchDismiss}
-        />
-      )}
+      <AnimatePresence>
+        {showMatch && selectedJob && (
+          <MatchScreen
+            job={selectedJob}
+            profile={profile}
+            onMessage={handleMatchDismiss}
+            onKeepSwiping={handleMatchDismiss}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

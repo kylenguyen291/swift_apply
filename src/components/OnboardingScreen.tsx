@@ -109,11 +109,10 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
         <div className="flex justify-between mb-3">
           {steps.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-display font-semibold transition-all duration-300 ${
-                i < step ? "bg-primary text-primary-foreground glow-primary" :
-                i === step ? "bg-primary text-primary-foreground animate-pulse" :
-                "bg-muted text-muted-foreground"
-              }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-display font-semibold transition-all duration-300 ${i < step ? "bg-primary text-primary-foreground glow-primary" :
+                  i === step ? "bg-primary text-primary-foreground animate-pulse" :
+                    "bg-muted text-muted-foreground"
+                }`}>
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
               </div>
             </div>
@@ -168,7 +167,7 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {step === 1 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold text-gradient">Your Experience</h2>
-              
+
               {experiences.map(exp => (
                 <div key={exp.id} className="glass p-4 relative">
                   <button onClick={() => removeExperience(exp.id)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
@@ -197,15 +196,14 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold text-gradient">Skills & Tools</h2>
-              
+
               <div className="flex gap-2">
                 {(["technical", "soft", "tools"] as const).map(cat => (
                   <button
                     key={cat}
                     onClick={() => setActiveSkillCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                      activeSkillCategory === cat ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground"
-                    }`}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${activeSkillCategory === cat ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground"
+                      }`}
                   >
                     {cat === "technical" ? "Technical" : cat === "soft" ? "Soft Skills" : "Tools"}
                   </button>
@@ -243,15 +241,14 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-display font-bold text-gradient">Your Preferences</h2>
-              
+
               <div>
                 <p className="text-sm text-muted-foreground mb-3">Job Type</p>
                 <div className="flex flex-wrap gap-2">
                   {JOB_TYPES.map(t => (
                     <button key={t} onClick={() => toggleChip(t, jobTypes, setJobTypes)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                        jobTypes.includes(t) ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${jobTypes.includes(t) ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
                     >{t}</button>
                   ))}
                 </div>
@@ -262,9 +259,8 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
                     <button key={ind} onClick={() => toggleChip(ind, industries, setIndustries)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                        industries.includes(ind) ? "bg-accent text-accent-foreground glow-accent" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${industries.includes(ind) ? "bg-accent text-accent-foreground glow-accent" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
                     >{ind}</button>
                   ))}
                 </div>
@@ -275,9 +271,8 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 <div className="flex flex-wrap gap-2">
                   {LOCATION_PREFS.map(loc => (
                     <button key={loc} onClick={() => setLocationPref(loc)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                        locationPref === loc ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${locationPref === loc ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
                     >{loc}</button>
                   ))}
                 </div>

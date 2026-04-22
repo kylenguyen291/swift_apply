@@ -25,7 +25,7 @@ const Dashboard = ({ applications, onBack }: DashboardProps) => {
   return (
     <div className="relative z-10 min-h-screen max-w-lg mx-auto px-6 py-6">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-all">
+        <button onClick={onBack} className="glass3d w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-2xl font-display font-bold text-gradient">Applications</h2>
@@ -37,8 +37,8 @@ const Dashboard = ({ applications, onBack }: DashboardProps) => {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-300 ${
-              tab === t ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground"
+            className={`glass3d px-4 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-300 ${
+              tab === t ? "text-white" : "text-white/50"
             }`}
           >
             {t}

@@ -116,7 +116,7 @@ const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, o
         </div>
         <button
           onClick={onOpenDashboard}
-          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-display font-bold border border-border hover:glow-accent transition-all"
+          className="glass3d w-10 h-10 rounded-full flex items-center justify-center text-sm font-display font-bold text-white transition-all hover:scale-110"
         >
           {profile.name.charAt(0) || "A"}
         </button>
@@ -268,19 +268,19 @@ const SwipeFeed = ({ jobs, profile, applications, onApply, onPass, swipesLeft, o
         <div className="flex justify-center gap-8 pb-8">
           <motion.button
             onClick={handleSwipeLeft}
-            className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center transition-colors hover:border-destructive/50"
+            className="glass3d w-16 h-16 rounded-full flex items-center justify-center transition-all"
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.85 }}
           >
-            <X className="w-7 h-7 text-destructive" />
+            <X className="w-7 h-7 text-red-400" />
           </motion.button>
           <motion.button
             onClick={handleSwipeRight}
-            className="w-16 h-16 rounded-full bg-primary border border-primary flex items-center justify-center glow-primary"
+            className="glass3d w-16 h-16 rounded-full flex items-center justify-center"
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.85 }}
           >
-            <Heart className="w-7 h-7 text-primary-foreground" />
+            <Heart className="w-7 h-7 text-white" />
           </motion.button>
         </div>
       )}

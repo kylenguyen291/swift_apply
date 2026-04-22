@@ -112,10 +112,10 @@ const CVTailoringModal = ({ job, profile, onSend, onClose }: CVTailoringModalPro
         </div>
 
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-border text-foreground font-display font-semibold transition-all hover:bg-muted">
+          <button onClick={onClose} className="glass3d flex-1 py-3 rounded-2xl text-white/80 font-display font-semibold transition-all hover:scale-105 active:scale-95">
             Edit Profile
           </button>
-          <button onClick={onSend} className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-display font-semibold glow-pulse transition-all hover:scale-105 active:scale-95">
+          <button onClick={onSend} className="glass3d flex-1 py-3 rounded-2xl text-white font-display font-semibold transition-all hover:scale-105 active:scale-95">
             Send Application
           </button>
         </div>

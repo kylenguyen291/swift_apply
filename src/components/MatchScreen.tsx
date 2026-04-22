@@ -79,10 +79,10 @@ const MatchScreen = ({ job, profile, onMessage, onKeepSwiping }: MatchScreenProp
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
         >
-          <button onClick={onMessage} className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-display font-semibold glow-primary transition-all hover:scale-105 active:scale-95">
+          <button onClick={onMessage} className="glass3d w-full py-3 rounded-2xl text-white font-display font-semibold transition-all hover:scale-105 active:scale-95">
             Message Now
           </button>
-          <button onClick={onKeepSwiping} className="w-full py-3 rounded-2xl border border-border text-foreground font-display font-semibold transition-all hover:bg-muted">
+          <button onClick={onKeepSwiping} className="glass3d w-full py-3 rounded-2xl text-white/80 font-display font-semibold transition-all hover:scale-105 active:scale-95">
             Keep Swiping
           </button>
         </motion.div>

@@ -34,13 +34,13 @@ const SplashScreen = ({ onGetStarted, onSignIn }: SplashScreenProps) => {
       >
         <button
           onClick={onGetStarted}
-          className="w-full py-4 rounded-2xl font-display font-semibold text-lg bg-primary text-primary-foreground glow-primary transition-all duration-300 hover:scale-105 active:scale-95"
+          className="glass3d w-full py-4 rounded-2xl font-display font-semibold text-lg text-white transition-all duration-300 hover:scale-105 active:scale-95"
         >
           Get Started
         </button>
         <button
           onClick={onSignIn}
-          className="w-full py-4 rounded-2xl font-display font-semibold text-lg border border-border text-foreground bg-transparent transition-all duration-300 hover:bg-muted active:scale-95"
+          className="glass3d w-full py-4 rounded-2xl font-display font-semibold text-lg text-white/80 transition-all duration-300 hover:scale-105 active:scale-95"
         >
           Sign In
         </button>

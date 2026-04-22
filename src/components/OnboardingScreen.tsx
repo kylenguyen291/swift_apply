@@ -202,8 +202,9 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                   <button
                     key={cat}
                     onClick={() => setActiveSkillCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${activeSkillCategory === cat ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground"
-                      }`}
+                    className={`glass3d px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                      activeSkillCategory === cat ? "text-white" : "text-white/50"
+                    }`}
                   >
                     {cat === "technical" ? "Technical" : cat === "soft" ? "Soft Skills" : "Tools"}
                   </button>
@@ -247,8 +248,9 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 <div className="flex flex-wrap gap-2">
                   {JOB_TYPES.map(t => (
                     <button key={t} onClick={() => toggleChip(t, jobTypes, setJobTypes)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${jobTypes.includes(t) ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
+                      className={`glass3d px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                        jobTypes.includes(t) ? "text-white" : "text-white/50"
+                      }`}
                     >{t}</button>
                   ))}
                 </div>
@@ -259,8 +261,9 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
                     <button key={ind} onClick={() => toggleChip(ind, industries, setIndustries)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${industries.includes(ind) ? "bg-accent text-accent-foreground glow-accent" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
+                      className={`glass3d px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                        industries.includes(ind) ? "text-white" : "text-white/50"
+                      }`}
                     >{ind}</button>
                   ))}
                 </div>
@@ -271,8 +274,9 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
                 <div className="flex flex-wrap gap-2">
                   {LOCATION_PREFS.map(loc => (
                     <button key={loc} onClick={() => setLocationPref(loc)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${locationPref === loc ? "bg-primary text-primary-foreground glow-primary" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
+                      className={`glass3d px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                        locationPref === loc ? "text-white" : "text-white/50"
+                      }`}
                     >{loc}</button>
                   ))}
                 </div>
@@ -285,13 +289,13 @@ const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
       {/* Navigation */}
       <div className="flex gap-3 mt-8">
         {step > 0 && (
-          <button onClick={() => setStep(step - 1)} className="flex-1 py-3 rounded-2xl border border-border text-foreground font-display font-semibold transition-all hover:bg-muted">
+          <button onClick={() => setStep(step - 1)} className="glass3d flex-1 py-3 rounded-2xl text-white/80 font-display font-semibold transition-all hover:scale-105 active:scale-95">
             Back
           </button>
         )}
         <button
           onClick={() => step < totalSteps - 1 ? setStep(step + 1) : handleComplete()}
-          className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-display font-semibold glow-primary transition-all hover:scale-105 active:scale-95"
+          className="glass3d flex-1 py-3 rounded-2xl text-white font-display font-semibold transition-all hover:scale-105 active:scale-95"
         >
           {step < totalSteps - 1 ? "Continue" : "Start Swiping"}
         </button>

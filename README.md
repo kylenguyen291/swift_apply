@@ -2,6 +2,8 @@
 
 **SwiftApply** is a mobile-first job application app that turns internship hunting into a swipe-based experience — think Tinder, but for your career. Built for university students in Southeast Asia, it matches candidates to relevant opportunities and auto-tailors their CV before sending.
 
+🔗 **Live Demo:** [swift-apply-c6ho.vercel.app](https://swift-apply-c6ho.vercel.app/)
+
 ---
 
 ## 🚀 Features
